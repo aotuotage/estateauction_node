@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>首页</title>
+		<link rel="stylesheet" href="./stylesheets/page.css" />
+		<script type="text/javascript" src="./javascripts/jquery.min.js" ></script>
+	</head>
+	<body>
+		<div class="left">
+			<div class="bigTitle">火星地产后台系统</div>
+			<div class="lines">
+				<div onclick="pageClick(this)" class="active userlist"><img src="./images/icon-1.png" />用户报价列表</div>
+				<div onclick="pageClick(this)" class="userback"><img src="./images/icon-3.png" />用户反馈信息</div>
+				<div onclick="pageClick(this)" class="subadout"><img src="./images/icon-5.png" />关于我们编辑</div>
+			</div>
+		</div>
+		<div class="top">
+			<div class="leftTiyle" id="flTitle">业务人员管理</div>
+		</div>
+		<div class="content">
+      <div class="buylist">
+      </div>
+      <div class="about" style="display:none">
+          <textarea class="about_text"></textarea>
+          <button class="subsb" type="button">提交修改</button>
+      </div>
+      <div class="userback_div" style="display:none">
+      </div>
+    </div>
+		<div style="text-align:center;">
+    </div>
+    <script>
+      $(document).ready(function(){
+        //用户报价列表
+        $.ajax({
+          url:"http://localhost:3000/buylist",
+          dataType:"json",
+          success:function(result){
+            for(let i=0; i<result.list.length; i++){
+              let pjson = JSON.parse(result.list[i]);
+              console.log(pjson.name)
+              $(".buylist").append(`
+              <p><span>企业名称：${pjson.name}</span> 
+                <span>企业注册号：${pjson.nameid}</span> 
+                <span>联系方式：${pjson.address}</span>  
+                <span>开户银行：${pjson.bank}</span> 
+                <span>银行账户：${pjson.bankid}</span>
+                <span>竞标出价：${pjson.buynum}</span>
+                <span>申请账户：${pjson.username}</span>
+              </p>
+              `)
+            }
+        }});
+        //用户反馈请求
+        $.ajax({url:"http://localhost:3000/userback",success:function(result){
+            for(let i=0; i<result.list.length; i++){
+              let pjson = JSON.parse(result.list[i]);
+              console.log(pjson.name)
+              $(".userback_div").append(`
+              <p><span>问题描述：${pjson.text}</span> 
+                <span>反馈账户：${pjson.username}</span> 
+              </p><br>
+              `)
+            }
+        }});
+        $(".userlist").click(function(){
+          $(".about").hide();
+          $(".buylist").show();
+          $(".userback_div").hide();
+        });
+        //关于我们数据请求
+        $(".subadout").click(function(){
+          $(".about").show();
+          $(".buylist").hide();
+          $(".userback_div").hide();
+          $.ajax({url:"http://localhost:3000/about",success:function(result){
+            $(".about_text").val(result.text[0].text)
+          }});
+        });
+        //关于我们修改请求
+        $(".subsb").click(function(){
+          let text= $(".about_text").val();
+          $.ajax({
+            url:"http://localhost:3000/aboutadd",  
+            dataType:"json",  
+            data:{"text":text}, 
+            type:"POST", 
+            success:function(req){
+                if(req.res.code == 200){
+                  alert(req.res.msg)
+                }
+            }
+          })
+        })
+        //用户反馈请求
+        $(".userback").click(function(){
+          $(".about").hide();
+          $(".buylist").hide();
+          $(".userback_div").show();
+        });
+      })
+      //列表切换
+      function pageClick(k) {
+          $(k).parent().find("div").removeClass("active");
+          $(k).addClass("active");
+          $("#flTitle").text($(k).text());
+        }
+    </script>
+	</body>
+</html>
